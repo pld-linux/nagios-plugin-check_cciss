@@ -3,7 +3,7 @@ Summary:	Nagios plugin to check the status of HP Smart Array Hardware
 Name:		nagios-plugin-%{plugin}
 # revision from download page
 Version:	1.11
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking
 # http://exchange.nagios.org/components/com_mtree/attachment.php?link_id=671&cf_id=35
@@ -31,10 +31,23 @@ install %{SOURCE0} %{plugin}
 
 cat > nagios.cfg <<'EOF'
 # Usage:
-# %{plugin}
+# %{plugin} [-v] [-p] [-e <number>] [-E <name>] [-s] [-d]
+#  -v                   = show status and informations about RAID
+#  -p                   = show detail for physical drives
+#  -e <number>          = exclude slot number
+#  -E <name>            = exclude chassis name
+#  -s                   = detect controller with HPSA driver (Hewlett Packard Smart Array)
+#  -d                   = use for debug (command line mode)
+#  -h                   = help information
+#  -V                   = version information
 define command {
 	command_name    %{plugin}
-	command_line    %{plugindir}/%{plugin}
+	command_line    %{plugindir}/%{plugin} $ARG1$
+}
+
+define command {
+	command_name    check_hpsa
+	command_line    %{plugindir}/%{plugin} -s $ARG1$
 }
 
 define service {
@@ -56,7 +69,7 @@ define service {
 
 	normal_check_interval   15
 	notification_interval   300
-	check_command           check_cciss -s
+	check_command           check_hpsa
 }
 EOF
 
